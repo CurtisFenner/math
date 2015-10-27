@@ -105,7 +105,12 @@ end
 function Rules.Negate(s)
 	-- TODO: determine based on types which invertible functions can be applied...
 	-- = can specify it's operands types? That seems elegant.
-	
+	local fs = Operators.getInvertibleFunctions(s[1])
+	local t = {}
+	for i = 1, #fs do
+		table.insert(t, S{s[1], S{fs[i], s[2]}, S{fs[i], s[3]} } )
+	end
+	return t
 end
 
 --------------------------------------------------------------------------------
