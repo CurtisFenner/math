@@ -31,37 +31,37 @@ end
 
 --------------------------------------------------------------------------------
 
-function transform(ex, rules)
+
+function transform(box, rules)
 	local r = {}
 	for name, rule in pairs(rules) do
-		local m = rule(ex)
+		local m = rule(box.expression)
 		assert(m, "must return value from rule " .. name)
 		assert(type(m) == "table", "must return table from rule " .. name)
 		assert(not getmetatable(m), "must return list (not object) from rule " .. name)
 		for _, v in pairs( m ) do
-			if type(v) == "table" then
-				rawset(v, "step", name)
-			end
-			if type(v) == "table" and not isS(v) then
-				print(name)
-			end
-			table.insert(r, v)
+			local t = {
+				step = name,
+				expression = v,
+				parent = box,
+			}
+			table.insert(r, t)
 		end
 	end
 	return r
 end
 
-function handle(ex, rules)
-	if isS(ex) then
-		local r = transform(ex, rules)
-		for i = 2, ex:size() do
-			local m = handle(ex[i], rules)
-			for _, s in pairs(m) do
-				local g = ex:replaced(i, s)
-				if type(s) == "table" then
-					rawset(g, "step", s.step)
-				end
-				table.insert(r, g )
+function handle(box, rules)
+	if isS(box.expression) then
+		local r = transform(box, rules)
+		for i = 2, box.expression:size() do
+			local subBoxes = handle({expression = box.expression[i], parent = box.parent, step = box.step}, rules)
+			for _, subBox in pairs(subBoxes) do
+				table.insert(r, {
+					expression = box.expression:replaced(i, subBox.expression),
+					step = subBox.step,
+					parent = box,
+				})
 			end
 		end
 		return r
@@ -72,30 +72,31 @@ end
 
 function Execute(expression, rules, score)
 	local begin = os.clock()
-	local heap = MinHeap.new(function(a, b) return score(a) < score(b) end)
-	heap:push(expression)
+	local heap = MinHeap.new(function(a, b) return score(a.expression) < score(b.expression) end)
+	local boxed = {expression = expression, step = "input"}
+	heap:push(boxed)
 	local seen = {}
 	seen[ tostring(expression) ] = true
-	local best = expression
+	local best = boxed
 	local cycles = 0
 	while heap:size() > 0 and cycles < 100 do
 		cycles = cycles + 1
 		local t = heap:pop()
-		local f = type(t) == "table" and t.step or ""
+		local f = t.step
 		f = f .. string.rep(" ", 20 - #f)
-		--print("", f .. tostring(t))
-		if not isS(t) or score(t) <= 1 then
+		--print("", f .. tostring(t.expression))
+		if not isS(t.expression) or score(t.expression) <= 1 then
 			return t
 		end
-		if score(t) < score(best) then
+		if score(t.expression) < score(best.expression) then
 			best = t
 		end
 		--
-		local vs = handle(t, rules)
-		for _, v in pairs(vs) do
-			local key = tostring(v)
+		local bs = handle(t, rules)
+		for _, b in pairs(bs) do
+			local key = tostring(b.expression)
 			if not seen[key] then
-				heap:push( v )
+				heap:push( b )
 				seen[ key ] = true
 			end
 		end
@@ -106,10 +107,10 @@ end
 
 --------------------------------------------------------------------------------
 
-local input = S {"=", S{"+", "x", S{"log", "y"} }, 0  }
+local input = S {"=", S{"-", "x"}, S{"-", "y"} }
 
 local answer = Execute(input, Rules, Size)
 print("Input")
 print("", LaTeX(input))
 print("Answer")
-print("", LaTeX(answer))
+print("", LaTeX(answer.expression))
