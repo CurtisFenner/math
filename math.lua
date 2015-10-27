@@ -34,7 +34,11 @@ end
 function transform(ex, rules)
 	local r = {}
 	for name, rule in pairs(rules) do
-		for _, v in pairs( rule(ex)  ) do
+		local m = rule(ex)
+		assert(m, "must return value from rule " .. name)
+		assert(type(m) == "table", "must return table from rule " .. name)
+		assert(not getmetatable(m), "must return list (not object) from rule " .. name)
+		for _, v in pairs( m ) do
 			if type(v) == "table" then
 				rawset(v, "step", name)
 			end
