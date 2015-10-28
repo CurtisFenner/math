@@ -3,6 +3,7 @@ local MinHeap = require("MinHeap")
 local S, isS = unpack( require("S") )
 local LaTeX = require("Latex")
 
+-- Prefers solving.
 function Size(expression)
 	-- Subtract two per unique variable
 	local bonus = 0
@@ -15,6 +16,11 @@ function Size(expression)
 				if not seen[k[i]] then
 					seen[k[i]] = true
 					bonus = bonus - 2
+				end
+			end
+			if isS(k[i]) then
+				if k[i][1] == "=" then
+					bonus = bonus - 1
 				end
 			end
 		end
@@ -112,5 +118,16 @@ local input = S {"=", S{"-", "x"}, S{"-", "y"} }
 local answer = Execute(input, Rules, Size)
 print("Input")
 print("", LaTeX(input))
+--
+local t = {}
+local box = answer
+while box do
+	table.insert(t, 1, box)
+	box = box.parent
+end
+for i = 1, #t do
+	print(string.rep(" ", 3 - #tostring(i) ) .. i .. ". " .. t[i].step)
+	print("", LaTeX(t[i].expression))
+end
 print("Answer")
 print("", LaTeX(answer.expression))
