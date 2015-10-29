@@ -32,6 +32,15 @@ end
 --------------------------------------------------------------------------------
 -- Logic:
 
+function Rules.LogicSame(s)
+	if s[1] == "and" or s[1] == "or" then
+		if Expression.equal( s[2], s[3]   ) then
+			return {s[2], s[3]}
+		end
+	end
+	return {}
+end
+
 function Rules.LogicIdentities(s)
 	if s[1] == "and" then
 		if Expression.equal(s[1], false) then
@@ -62,6 +71,10 @@ function Rules.LogicIdentities(s)
 	end
 	return {}
 end
+
+
+--------------------------------------------------------------------------------
+
 
 
 --------------------------------------------------------------------------------

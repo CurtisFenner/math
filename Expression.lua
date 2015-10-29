@@ -1,7 +1,12 @@
-
+local S, isS = require("S")
+local LaTeX = require("Latex")
 local Expression = {}
 -- False negatives allowed
 function Expression.equal(a, b)
+	-- TODO: Compare on a stronger basis than LaTeX
+	if isS(a) and isS(b) then
+		return a == b or LaTeX(a) == LaTeX(b)
+	end
 	return a == b
 end
 
