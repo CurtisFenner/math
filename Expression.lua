@@ -1,4 +1,4 @@
-local S, isS = require("S")
+local S, isS = unpack(require("S"))
 local LaTeX = require("Latex")
 local Expression = {}
 -- False negatives allowed
