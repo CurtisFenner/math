@@ -20,6 +20,7 @@ Problem:
 local Expression = require("Expression")
 local Operators = require("Operators")
 local S, isS = unpack( require("S") )
+local LaTeX = require("Latex")
 --
 local Rules = {}
 --
@@ -34,6 +35,8 @@ end
 
 function Rules.LogicSame(s)
 	if s[1] == "and" or s[1] == "or" then
+		assert(s:size() == 3)
+		assert(s:valid())
 		if Expression.equal( s[2], s[3]   ) then
 			return {s[2], s[3]}
 		end
@@ -41,32 +44,30 @@ function Rules.LogicSame(s)
 	return {}
 end
 
+local function isTrue(s)
+	return Expression.equal(s, true)
+end
+local function isFalse(s)
+	return Expression.equal(s, false)
+end
+
 function Rules.LogicIdentities(s)
-	if s[1] == "and" then
-		if Expression.equal(s[1], false) then
+	local op, left, right = s[1], s[2], s[3]
+	if op == "and" then
+		if isFalse(left) or isFalse(right) then
 			return {false}
-		elseif Expression.equal(s[1], true) then
-			return {s[2]}
-		elseif Expression.equal(s[2], false) then
-			return {false}
-		elseif Expression.equal(s[2], true) then
-			return {s[1]}
+		elseif isTrue(left) then
+			return {right}
+		elseif isTrue(right) then
+			return {left}
 		end
-	elseif s[1] == "or" then
-		if Expression.equal(s[1], false) then
-			return {s[2]}
-		elseif Expression.equal(s[1], true) then
+	elseif op == "or" then
+		if isTrue(left) or isTrue(right) then
 			return {true}
-		elseif Expression.equal(s[2], false) then
-			return {s[1]}
-		elseif Expression.equal(s[2], true) then
-			return {true}
-		end
-	elseif s[1] == "implies" then
-		if Expression.equal(s[3], false) then
-			return {S{"not", s[2]}}
-		elseif Expression.equal(s[3], true) then
-			return {true}
+		elseif isFalse(left) then
+			return {right}
+		elseif isFalse(right) then
+			return {left}
 		end
 	end
 	return {}
@@ -74,7 +75,20 @@ end
 
 
 --------------------------------------------------------------------------------
+-- Solving equations:
 
+function Rules.ZeroProduct(s)
+	if s[1] == "=" then
+		local left, right = s[2], s[3]
+		if Expression.equal(left, 0) and isS(right) then
+			if right[1] == "*" and right:size() > 2 then
+				local K = S{"or", S{"=", 0, right:removed(2)}, S{"=", 0, right[2]} }
+				return {K}
+			end
+		end
+	end
+	return {}
+end
 
 
 --------------------------------------------------------------------------------
@@ -141,7 +155,7 @@ end
 function Rules.Merge(s)
 	-- TODO: fix me to be *associative*
 	local op = s[1]
-	if Operators.isCommutative(op) then
+	if Operators.isCommutative(op) and Operators.isVariadic(op) then
 		local r = {}
 		for i = 2, s:size() do
 			if isS(s[i]) and s[i][1] == op then
@@ -159,7 +173,7 @@ end
 
 function Rules.LoneOperand(s)
 	local op = s[1]
-	if Operators.isCommutative(op) then
+	if Operators.isAssociative(op) then
 		if s:size() == 2 then
 			return {s[2]}
 		end
@@ -203,7 +217,9 @@ function Rules.SimplifyIdentity( s )
 		end
 	end
 	if #t == 1 then
-		return { S{s[1],    Operators.getIdentity(s[1] ) } }
+		local i = Operators.getIdentity(s[1])
+		assert(i ~= nil)
+		return { S{s[1], i } }
 	end
 	if #t < s:size() then
 		return { S(t) }
