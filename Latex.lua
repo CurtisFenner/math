@@ -53,6 +53,10 @@ end
 
 -- Produces a string of LaTex (math mode) code representing expression `ex`
 function Latex(ex, pre)
+	if isS(ex) then
+		assert( ex:valid() , "invalid ex passed to LaTeX: " .. tostring(ex))
+	end
+	assert( ex ~= nil , "nil passed to LaTex")
 	if type(ex) == "boolean" then
 		return ex and "\\text{True}" or "\\text{False}"
 	elseif type(ex) == "number" or type(ex) == "string" then
@@ -84,6 +88,8 @@ function Latex(ex, pre)
 		end
 		return "{" .. pre .. table.concat(t, sep) .. post .. "}"
 	else
+		print( "LaTeX failed on", ex )
+		return tostring(math.random())
 		-- TODO: come up with a standard way to LaTeX special objects.
 	end
 end
