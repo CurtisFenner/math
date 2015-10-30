@@ -46,6 +46,9 @@ function transform(box, rules)
 		assert(type(m) == "table", "must return table from rule " .. name)
 		assert(not getmetatable(m), "must return list (not object) from rule " .. name)
 		for _, v in pairs( m ) do
+			if isS(v) then
+				assert(v:valid(), name .. " produced in valid expression " .. tostring(v))
+			end
 			local t = {
 				step = name,
 				expression = v,
@@ -85,13 +88,14 @@ function Execute(expression, rules, score)
 	seen[ tostring(expression) ] = true
 	local best = boxed
 	local cycles = 0
-	while heap:size() > 0 and cycles < 100 do
+	while heap:size() > 0 and cycles < 1000 do
 		cycles = cycles + 1
 		local t = heap:pop()
-		local f = t.step
-		f = f .. string.rep(" ", 20 - #f)
+		--local f = t.step
+		--f = f .. string.rep(" ", 20 - #f)
 		--print("", f .. tostring(t.expression))
-		if not isS(t.expression) or score(t.expression) <= 1 then
+		if not isS(t.expression) or score(t.expression) < 2 then
+			print("Perfect!")
 			return t
 		end
 		if score(t.expression) < score(best.expression) then
@@ -102,18 +106,25 @@ function Execute(expression, rules, score)
 		for _, b in pairs(bs) do
 			local key = tostring(b.expression)
 			if not seen[key] then
+				--print(key)
+				--[[if key:find("nil") then
+					print("NIL FROM: ", b.step)
+					print("GOOD: ", t.expression)
+					print("BAD:  ", b.expression)
+					print("BAD P:", b.parent.step, b.parent.parent.expression)
+				end]]
 				heap:push( b )
 				seen[ key ] = true
 			end
 		end
 	end
-	print("Elapsed:", os.clock() - begin)
+	print("Elapsed:", os.clock() - begin, score(best.expression))
 	return best
 end
 
 --------------------------------------------------------------------------------
 
-local input = S {"=", S{"-", "x"}, S{"-", "y"} }
+local input = S {"=", S{"*", "x", 5, "x", "y", "z"}, 0 }
 
 local answer = Execute(input, Rules, Size)
 print("Input")
