@@ -4,34 +4,31 @@ local S, isS = unpack( require("S") )
 local LaTeX = require("Latex")
 
 -- Prefers solving.
-function Size(expression)
+function Size(expression, data)
+	data = data or {
+		seen = {}
+	}
 	-- Subtract two per unique variable
-	local bonus = 0
 	if isS(expression) then
-		-- Discount variables slightly (since answers can be expected to have some small freedoms)
-		local k = expression:descendants()
-		local seen = {}
-		for i = 1, #k do
-			if type(k[i]) == "string" then
-				if not seen[k[i]] then
-					seen[k[i]] = true
-					bonus = bonus - 2
-				end
-			end
-			if isS(k[i]) then
-				if k[i][1] == "=" then
-					bonus = bonus - 1
-				end
-			end
-		end
 		-- Compute normal size:
+		local bonus = 0
+		if expression[1] == "=" then
+			bonus = -0.5
+		end
 		local s = 1
 		for i = 2, expression:size() do
-			s = s + Size(expression[i])
+			s = s + Size(expression[i], data)
 		end
 		return s + bonus
 	else
-		return 1 + bonus
+		if type(expression) == "string" then
+			-- Variables are OK the first time, since, they're hard to eliminate in general.
+			if not data.seen[expression] then
+				data.seen[expression] = true
+				return 0.1
+			end
+		end
+		return 1
 	end
 end
 
