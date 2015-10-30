@@ -1,5 +1,13 @@
 local Operators = {}
 
+function Operators.isAssociative(op)
+	return op == "or" or op == "and" or op == "+" or op == "*"
+end
+
+function Operators.isVariadic(op)
+	return op == "+" or op == "*"
+end
+
 function Operators.isReflexive(op)
 	return op == "=" or op == ">=" or op == "<="
 end
