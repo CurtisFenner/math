@@ -1,6 +1,8 @@
 local SMethods = {}
 local private = {}
 
+local Operators = require("Operators")
+
 function SMethods.clone(self)
 	return S(self[private])
 end
@@ -21,6 +23,11 @@ function SMethods.valid(self)
 			return false
 		end
 		okay[i] = true
+	end
+	if Operators.isBinary(self[1]) then
+		if self:size() ~= 3 then
+			return false
+		end
 	end
 	for i, v in pairs(self[private]) do
 		if not okay[i] then
