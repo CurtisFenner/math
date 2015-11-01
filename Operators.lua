@@ -1,7 +1,7 @@
 local Operators = {}
 
 function Operators.isBinary(op)
-	return op == "and" or op == "or"
+	return false
 end
 
 function Operators.getAnnihilator(op)

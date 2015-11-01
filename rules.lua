@@ -35,10 +35,15 @@ end
 
 function Rules.LogicSame(s)
 	if s[1] == "and" or s[1] == "or" then
-		assert(s:size() == 3)
-		assert(s:valid())
-		if Expression.equal( s[2], s[3]   ) then
-			return {s[2], s[3]}
+		for i = 2, s:size() do
+			for j = 3, s:size() do
+				if Expression.equal(s[i], s[j]) then
+					return {
+						s:removed(i),
+						s:removed(j),
+					}
+				end
+			end
 		end
 	end
 	return {}
