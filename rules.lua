@@ -44,35 +44,6 @@ function Rules.LogicSame(s)
 	return {}
 end
 
-local function isTrue(s)
-	return Expression.equal(s, true)
-end
-local function isFalse(s)
-	return Expression.equal(s, false)
-end
-
-function Rules.LogicIdentities(s)
-	local op, left, right = s[1], s[2], s[3]
-	if op == "and" then
-		if isFalse(left) or isFalse(right) then
-			return {false}
-		elseif isTrue(left) then
-			return {right}
-		elseif isTrue(right) then
-			return {left}
-		end
-	elseif op == "or" then
-		if isTrue(left) or isTrue(right) then
-			return {true}
-		elseif isFalse(left) then
-			return {right}
-		elseif isFalse(right) then
-			return {left}
-		end
-	end
-	return {}
-end
-
 
 --------------------------------------------------------------------------------
 -- Solving equations:
@@ -82,6 +53,11 @@ function Rules.ZeroProduct(s)
 		local left, right = s[2], s[3]
 		if Expression.equal(left, 0) and isS(right) then
 			if right[1] == "*" and right:size() > 2 then
+				if right:size() == 3 then
+					return {
+						S{"or", S{"=", 0, right[2]}, S{"=", 0, right[3]}}
+					}
+				end
 				local K = S{"or", S{"=", 0, right:removed(2)}, S{"=", 0, right[2]} }
 				return {K}
 			end
@@ -143,11 +119,35 @@ end
 --------------------------------------------------------------------------------
 -- Arithmetic simplification:
 
+function Rules.Annihiliation(s)
+	local e = Operators.getAnnihilator(s[1])
+	if e == nil then
+		return {}
+	end
+	for i = 2, s:size() do
+		if Expression.equal(s[i], e) then
+			print("annihilate", s[1])
+			return { S{s[1], e} }
+		end
+	end
+	return {}
+end
+
 function Rules.NotNot(s)
 	if s:size() == 2 then
 		if isS(s[2]) and s[2]:size() == 2 and Operators.isUnaryInverse(s[1], s[2][1]) then
 			return {s[2][2]}
 		end
+	end
+	return {}
+end
+
+function Rules.flip(s)
+	local op = s[1]
+	if Operators.isCommutative(op) and s:size() == 3 then
+		return {
+			S{ op, s[3], s[2] }
+		}
 	end
 	return {}
 end
