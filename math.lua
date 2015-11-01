@@ -2,6 +2,14 @@ local Rules = require("rules")
 local MinHeap = require("MinHeap")
 local S, isS = unpack( require("S") )
 local LaTeX = require("Latex")
+local Operators = require("Operators")
+
+local INTERACTIVE = false
+for i = 1, #arg do
+	if arg[i]:find("interactive") then
+		INTERACTIVE = true
+	end
+end
 
 -- Prefers solving.
 function Size(expression, data)
@@ -12,8 +20,16 @@ function Size(expression, data)
 	if isS(expression) then
 		-- Compute normal size:
 		local bonus = 0
+		if expression[1] == "=" or expression[1] == "or" or expression[1] == "and" then
+			bonus = -1
+		end
+		if Operators.isAssociative( expression[1] ) and expression:size() == 2 then
+			return Size(expression[2], data)
+		end
 		if expression[1] == "=" then
-			bonus = -0.5
+			if not isS(expression[2]) or not isS(expression[3]) then
+				bonus = bonus - 1
+			end
 		end
 		local s = 1
 		for i = 2, expression:size() do
@@ -25,7 +41,7 @@ function Size(expression, data)
 			-- Variables are OK the first time, since, they're hard to eliminate in general.
 			if not data.seen[expression] then
 				data.seen[expression] = true
-				return 0.1
+				return 0.6
 			end
 		end
 		return 1
@@ -76,6 +92,24 @@ function handle(box, rules)
 	end
 end
 
+function Interactive(expression, rules)
+	local step = 0
+	while true do
+		step = step + 1
+		print("\n" .. step .. ".", expression )
+		local r = handle({ expression = expression, step = "interactive" }, rules)
+		for i = 1, #r do
+			print("", i .. ")", r[i].expression)
+		end
+		local choice
+		repeat
+			io.write(">")
+			choice = tonumber( io.read("*line") )
+		until choice and r[choice]
+		expression = r[choice].expression
+	end
+end
+
 function Execute(expression, rules, score)
 	local begin = os.clock()
 	local heap = MinHeap.new(function(a, b) return score(a.expression) < score(b.expression) end)
@@ -85,9 +119,15 @@ function Execute(expression, rules, score)
 	seen[ tostring(expression) ] = true
 	local best = boxed
 	local cycles = 0
+	local lastScore
 	while heap:size() > 0 and cycles < 1000 do
 		cycles = cycles + 1
 		local t = heap:pop()
+		local ss = score(t.expression)
+		if ss ~= lastScore then
+			print(ss)
+		end
+		lastScore = ss
 		--local f = t.step
 		--f = f .. string.rep(" ", 20 - #f)
 		--print("", f .. tostring(t.expression))
@@ -123,6 +163,14 @@ end
 
 local input = S {"=", S{"*", "x", 5, "x", "y", "z"}, 0 }
 
+--input = S{"=", S{"*", "x", "y"}, 0}
+
+local correct = S{"or",  S{"or",  S{"=", "x", 0}, S{"=", "y", 0}    } , S{"=", "z", 0}    }
+print("Correct score:", Size( correct ) )
+
+if INTERACTIVE then
+	Interactive(input, Rules)
+end
 local answer = Execute(input, Rules, Size)
 print("Input")
 print("", LaTeX(input))
@@ -134,8 +182,9 @@ while box do
 	box = box.parent
 end
 for i = 1, #t do
-	print(string.rep(" ", 3 - #tostring(i) ) .. i .. ". " .. t[i].step)
-	print("", LaTeX(t[i].expression))
+	--print(string.rep(" ", 3 - #tostring(i) ) .. i .. ". " .. t[i].step)
+	print("\\item   " .. t[i].step)
+	print("$$", LaTeX(t[i].expression), "$$")
 end
 print("Answer")
 print("", LaTeX(answer.expression))
