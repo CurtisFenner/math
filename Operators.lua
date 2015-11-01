@@ -1,5 +1,19 @@
 local Operators = {}
 
+function Operators.isBinary(op)
+	return op == "and" or op == "or"
+end
+
+function Operators.getAnnihilator(op)
+	if op == "and" then
+		return false
+	elseif op == "or" then
+		return true
+	elseif op == "*" then
+		return 0
+	end
+end
+
 function Operators.isAssociative(op)
 	return op == "or" or op == "and" or op == "+" or op == "*"
 end
@@ -25,7 +39,11 @@ function Operators.isCommutative(op)
 end
 
 function Operators.getIdentity(op, value)
-	if op == "+" then
+	if op == "and" then
+		return true
+	elseif op == "or" then
+		return false
+	elseif op == "+" then
 		return 0
 	elseif op == "*" then
 		return 1
