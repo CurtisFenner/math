@@ -92,6 +92,11 @@ function handle(box, rules)
 	end
 end
 
+function string.padRight(str, c, n)
+	local m = n - #str
+	return str .. c:rep(m):sub(1, m)
+end
+
 function Interactive(expression, rules)
 	local step = 0
 	while true do
@@ -99,7 +104,7 @@ function Interactive(expression, rules)
 		print("\n" .. step .. ".", expression )
 		local r = handle({ expression = expression, step = "interactive" }, rules)
 		for i = 1, #r do
-			print("", i .. ")", r[i].expression)
+			print("", i .. ")", r[i].step:padRight(" ", 20) , r[i].expression)
 		end
 		local choice
 		repeat
