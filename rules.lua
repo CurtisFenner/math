@@ -36,7 +36,7 @@ end
 function Rules.LogicSame(s)
 	if s[1] == "and" or s[1] == "or" then
 		for i = 2, s:size() do
-			for j = 3, s:size() do
+			for j = i+1, s:size() do
 				if Expression.equal(s[i], s[j]) then
 					return {
 						s:removed(i),
