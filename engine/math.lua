@@ -117,8 +117,12 @@ function Interactive(expression, rules, score)
 		end
 		local choice
 		repeat
-			io.write(">")
-			choice = tonumber( io.read("*line") )
+			io.write("> ")
+			local line = io.read("*line")
+			if line == "done" or line == "quit" or line == "exit" then
+				return
+			end
+			choice = tonumber( line )
 		until choice and r[choice]
 		expression = r[choice].expression
 	end
@@ -171,12 +175,18 @@ local input = "" -- S {"=", S{"*", "x", 5, "x", "y", "z"}, 0 }
 for i = 1, #params do
 	input = input .. params[i] .. " "
 end
-assert(input:find("%S"), "must specify expression")
-input = parseS(input)
 
 if INTERACTIVE then
+	if not input:find("%S") then
+		print("Enter S-expression:")
+		io.write("> ")
+		local f = io.read("*line")
+		input = parseS(f)
+	end
 	Interactive(input, Rules, Size)
 else
+	assert(input:find("%S"), "must specify expression")
+	input = parseS(input)
 	local answer = Execute(input, Rules, Size)
 	--
 	local t = {}
