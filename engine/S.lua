@@ -143,6 +143,51 @@ function isS(x)
 	return type(x) == "table" and getmetatable(x) and getmetatable(x).__newindex == Smeta.__newindex and x[private]
 end
 
+-- Strips whitespace from S-expressions. Returns an S-expression or other
+-- primitive
+function parseS( str )
+	local t = {}
+	if str:sub(1, 1) == "[" then
+		str = str:gsub("%s+", "")
+		assert(str:sub(-1) == "]", "unbalanced braces")
+		local opEnd = str:find("[%],]")
+		local op = str:sub(2, opEnd - 1)
+		t[1] = op
+		assert(op and #op > 0, "empty operator")
+		local rest = str:sub(opEnd + 1, -2)
+		while #rest > 0 do
+			if rest:sub(1, 1) == "[" then
+				local _, e = rest:find("%b[]")
+				assert(e, "unbalanced braces")
+				table.insert(t,  parseS( rest:sub(1, e) ) )
+				rest = rest:sub(e + 1)
+				assert(rest:sub(1, 1) == "," or rest:sub(1, 1) == "]" or rest:sub(1, 1) == "", "invalid S-expression")
+				rest = rest:sub(2)
+			else
+				local k = rest:find("[%],]")
+				if not k then
+					table.insert(t, parseS( rest) )
+					rest = ""
+				else
+					table.insert(t, parseS( rest:sub(1, k - 1) ) )
+					rest = rest:sub(k + 1)
+				end
+			end
+		end
+		return S(t)
+	else
+		if str == "true" then
+			return true
+		elseif str == "false" then
+			return false
+		elseif tonumber(str) then
+			return tonumber(str)
+		else
+			return str
+		end
+	end
+end
+
 assert( isS( S{"+", 1, 2}  ) )
 assert( not isS( {} ))
 assert( not isS( 5 ) )
@@ -159,4 +204,4 @@ local u = S {"or", S{"=", 0, "x"}, S{"or", nil, S{"=", S{"*", "y", "x"}, 0}}}
 assert( not u:valid() )
 
 
-return {S, isS}
+return {S, isS, parseS}
