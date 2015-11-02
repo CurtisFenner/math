@@ -1,7 +1,16 @@
+local dir = ""
+for i = #arg[0], 1, -1 do
+	if arg[0]:sub(i, i) == "/" then
+		dir = arg[0]:sub(1, i)
+		break
+	end
+end
+
+local Operators = require(dir .. "Operators")
+
 local SMethods = {}
 local private = {}
 
-local Operators = require("Operators")
 
 function SMethods.clone(self)
 	return S(self[private])

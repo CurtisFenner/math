@@ -1,3 +1,10 @@
+local dir = ""
+for i = #arg[0], 1, -1 do
+	if arg[0]:sub(i, i) == "/" then
+		dir = arg[0]:sub(1, i)
+		break
+	end
+end
 
 --[[
 
@@ -17,10 +24,9 @@ Problem:
 	solution:  Value resulted from solving task
 ]]
 
-local Expression = require("Expression")
-local Operators = require("Operators")
-local S, isS = unpack( require("S") )
-local LaTeX = require("Latex")
+local Expression = require(dir .. "Expression")
+local Operators = require(dir .. "Operators")
+local S, isS = unpack( require(dir .. "S") )
 --
 local Rules = {}
 --

@@ -1,8 +1,15 @@
-local Rules = require("rules")
-local MinHeap = require("MinHeap")
-local S, isS = unpack( require("S") )
-local LaTeX = require("Latex")
-local Operators = require("Operators")
+local dir = ""
+for i = #arg[0], 1, -1 do
+	if arg[0]:sub(i, i) == "/" then
+		dir = arg[0]:sub(1, i)
+		break
+	end
+end
+
+local Rules = require(dir .. "Rules")
+local MinHeap = require(dir .. "MinHeap")
+local S, isS = unpack( require(dir .. "S") )
+local Operators = require(dir .. "Operators")
 
 local INTERACTIVE = false
 for i = 1, #arg do
@@ -127,22 +134,22 @@ function Execute(expression, rules, score)
 	seen[ tostring(expression) ] = true
 	local best = boxed
 	local cycles = 0
-	local lastScore
+	--local lastScore
 	while heap:size() > 0 and cycles < 1000 do
 		cycles = cycles + 1
 		local t = heap:pop()
-		local ss = score(t.expression)
-		if ss ~= lastScore then
-			print(ss)
-		end
-		lastScore = ss
+		--local ss = score(t.expression)
+		--if ss ~= lastScore then
+		--	print(ss)
+		--end
+		--lastScore = ss
 		--local f = t.step
 		--f = f .. string.rep(" ", 20 - #f)
 		--print("", f .. tostring(t.expression))
-		if not isS(t.expression) or score(t.expression) < 2 then
-			print("Perfect!")
-			return t
-		end
+		--if not isS(t.expression) or score(t.expression) < 2 then
+		--	print("Perfect!")
+		--	return t
+		--end
 		if score(t.expression) < score(best.expression) then
 			best = t
 		end
@@ -151,13 +158,6 @@ function Execute(expression, rules, score)
 		for _, b in pairs(bs) do
 			local key = tostring(b.expression)
 			if not seen[key] then
-				--print(key)
-				--[[if key:find("nil") then
-					print("NIL FROM: ", b.step)
-					print("GOOD: ", t.expression)
-					print("BAD:  ", b.expression)
-					print("BAD P:", b.parent.step, b.parent.parent.expression)
-				end]]
 				heap:push( b )
 				seen[ key ] = true
 			end
@@ -171,17 +171,12 @@ end
 
 local input = S {"=", S{"*", "x", 5, "x", "y", "z"}, 0 }
 
---input = S{"=", S{"*", "x", "y"}, 0}
-
-local correct = S{"or",  S{"or",  S{"=", "x", 0}, S{"=", "y", 0}    } , S{"=", "z", 0}    }
-print("Correct score:", Size( correct ) )
-
 if INTERACTIVE then
 	Interactive(input, Rules, Size)
 end
 local answer = Execute(input, Rules, Size)
 print("Input")
-print("", LaTeX(input))
+print("", input)
 --
 local t = {}
 local box = answer
@@ -191,8 +186,8 @@ while box do
 end
 for i = 1, #t do
 	--print(string.rep(" ", 3 - #tostring(i) ) .. i .. ". " .. t[i].step)
-	print("\\item   " .. t[i].step)
-	print("$$", LaTeX(t[i].expression), "$$")
+	print("- " .. t[i].step)
+	print("", t[i].expression)
 end
 print("Answer")
-print("", LaTeX(answer.expression))
+print("", answer.expression)
