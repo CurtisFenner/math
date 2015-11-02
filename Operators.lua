@@ -19,7 +19,7 @@ function Operators.isAssociative(op)
 end
 
 function Operators.isVariadic(op)
-	return op == "+" or op == "*"
+	return op == "+" or op == "*" or op == "and" or op == "or"
 end
 
 function Operators.isReflexive(op)
