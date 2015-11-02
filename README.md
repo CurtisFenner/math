@@ -12,7 +12,9 @@ Run in "interactive" mode, where the user selects which step to follow next:
     lua engine/math.lua interactive [=, [+, 5, x], 0]
 
 Or,
+
     lua engine/math.lua interactive
+
 and enter the S-expression at the prompt.
 
 The expression is passed in as an S-expression, where [] are used to denote lists.
