@@ -8,14 +8,13 @@ end
 
 local Rules = require(dir .. "Rules")
 local MinHeap = require(dir .. "MinHeap")
-local S, isS = unpack( require(dir .. "S") )
+local S, isS, parseS = unpack( require(dir .. "S") )
 local Operators = require(dir .. "Operators")
 
-local INTERACTIVE = false
-for i = 1, #arg do
-	if arg[i]:find("interactive") then
-		INTERACTIVE = true
-	end
+local params = {unpack(arg)}
+INTERACTIVE = params[1] == "interactive"
+if INTERACTIVE then
+	table.remove(params, 1)
 end
 
 -- Prefers solving.
@@ -163,31 +162,31 @@ function Execute(expression, rules, score)
 			end
 		end
 	end
-	print("Elapsed:", os.clock() - begin, score(best.expression))
 	return best
 end
 
 --------------------------------------------------------------------------------
 
-local input = S {"=", S{"*", "x", 5, "x", "y", "z"}, 0 }
+local input = "" -- S {"=", S{"*", "x", 5, "x", "y", "z"}, 0 }
+for i = 1, #params do
+	input = input .. params[i] .. " "
+end
+assert(input:find("%S"), "must specify expression")
+input = parseS(input)
 
 if INTERACTIVE then
 	Interactive(input, Rules, Size)
+else
+	local answer = Execute(input, Rules, Size)
+	--
+	local t = {}
+	local box = answer
+	while box do
+		table.insert(t, 1, box)
+		box = box.parent
+	end
+	for i = 1, #t do
+		print("- " .. t[i].step)
+		print("", t[i].expression)
+	end
 end
-local answer = Execute(input, Rules, Size)
-print("Input")
-print("", input)
---
-local t = {}
-local box = answer
-while box do
-	table.insert(t, 1, box)
-	box = box.parent
-end
-for i = 1, #t do
-	--print(string.rep(" ", 3 - #tostring(i) ) .. i .. ". " .. t[i].step)
-	print("- " .. t[i].step)
-	print("", t[i].expression)
-end
-print("Answer")
-print("", answer.expression)
