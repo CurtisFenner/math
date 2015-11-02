@@ -12,6 +12,12 @@ local S, isS, parseS = unpack( require(dir .. "S") )
 local Operators = require(dir .. "Operators")
 
 local params = {unpack(arg)}
+
+VERBOSE = params[1] == "verbose"
+if VERBOSE then
+	table.remove(params, 1)
+end
+
 INTERACTIVE = params[1] == "interactive"
 if INTERACTIVE then
 	table.remove(params, 1)
@@ -30,11 +36,11 @@ function Size(expression, data)
 			bonus = -0.9
 		end
 		if Operators.isAssociative( expression[1] ) and expression:size() == 2 then
-			return Size(expression[2], data)
+			return Size(expression[2], data) + 0.1
 		end
 		if expression[1] == "=" then
 			if not isS(expression[2]) or not isS(expression[3]) then
-				bonus = bonus - 1
+				bonus = bonus - 0.9
 			end
 		end
 		local s = 1
@@ -161,6 +167,9 @@ function Execute(expression, rules, score)
 		for _, b in pairs(bs) do
 			local key = tostring(b.expression)
 			if not seen[key] then
+				if VERBOSE then
+					print(key)
+				end
 				heap:push( b )
 				seen[ key ] = true
 			end
