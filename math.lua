@@ -21,7 +21,7 @@ function Size(expression, data)
 		-- Compute normal size:
 		local bonus = 0
 		if expression[1] == "=" or expression[1] == "or" or expression[1] == "and" then
-			bonus = -1
+			bonus = -0.9
 		end
 		if Operators.isAssociative( expression[1] ) and expression:size() == 2 then
 			return Size(expression[2], data)
@@ -97,12 +97,15 @@ function string.padRight(str, c, n)
 	return str .. c:rep(m):sub(1, m)
 end
 
-function Interactive(expression, rules)
+function Interactive(expression, rules, score)
 	local step = 0
 	while true do
 		step = step + 1
 		print("\n" .. step .. ".", expression )
 		local r = handle({ expression = expression, step = "interactive" }, rules)
+		table.sort(r, function(a, b)
+			return score(a.expression) < score(b.expression)
+		end)
 		for i = 1, #r do
 			print("", i .. ")", r[i].step:padRight(" ", 20) , r[i].expression)
 		end
@@ -174,7 +177,7 @@ local correct = S{"or",  S{"or",  S{"=", "x", 0}, S{"=", "y", 0}    } , S{"=", "
 print("Correct score:", Size( correct ) )
 
 if INTERACTIVE then
-	Interactive(input, Rules)
+	Interactive(input, Rules, Size)
 end
 local answer = Execute(input, Rules, Size)
 print("Input")
