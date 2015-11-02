@@ -197,6 +197,8 @@ function Rules.SimplifyInverse( s )
 	local R = {}
 	if Operators.isCommutative(op) then
 		local inv = Operators.getInverse(op)
+		local iden = Operators.getIdentity(op)
+		assert(iden ~= nil, "must have identity if has inverse")
 		-- TODO: make a distinction between right and left inverse
 		-- (doesn't matter for commutative case, anyway)
 		for i = 2, s:size() do
@@ -208,7 +210,11 @@ function Rules.SimplifyInverse( s )
 							f = 1
 						end
 						local k = s:removed(i):removed(j - f)
-						table.insert(R, k)
+						if k:size() == 1 then
+							table.insert(R, iden)
+						else
+							table.insert(R, k)
+						end
 					end
 				end
 			end
