@@ -36,6 +36,40 @@ function clone(S)
 end
 
 --------------------------------------------------------------------------------
+
+-- This is an "if then else" function, not an implication.
+-- Useful in the definition of abs, for example.
+function Rules.If(s)
+	if s[1] == "if" then
+		if Expression.equal(s[2], true) then
+			return {s[3]}
+		elseif Expression.equal(s[2], false) then
+			return {s[4]}
+		elseif Expression.equal(s[3], s[4]) then
+			return {s[3]}
+		end
+	end
+	return {}
+end
+
+--------------------------------------------------------------------------------
+-- Differentiation:
+
+function Rules.DifferentiateSum(s)
+	if s[1] == "d" then
+		if isS(s[3]) and s[3][1] == "+" then
+			-- TODO: check differentiability of functions
+			local t = {}
+			for i = 2, s[3]:size() do
+				t[i-1] = S{"+", S{"d", s[2], s[3][i]},   S{"d", s[2], s[3]:removed(i) } }
+			end
+			return t
+		end
+	end
+	return {}
+end
+
+--------------------------------------------------------------------------------
 -- Integration:
 
 -- Taken from Slagle, 1961, SAINT:
@@ -79,7 +113,7 @@ function Rules.IntegrateScaled(s)
 			for i = 2, s[3]:size() do
 				if Expression.isConstant(s[2], s[3][i]) then
 					return {
-						S{"*", s[3][i],  {"int", s[2],   s[3]:removed(i) } },
+						S{"*", s[3][i],  S{"int", s[2],   s[3]:removed(i) } },
 					}
 				end
 			end
@@ -87,6 +121,38 @@ function Rules.IntegrateScaled(s)
 	end
 	return {}
 end
+
+-- b)
+function Rules.IntegrateNegate(s)
+	if s[1] == "int" then
+		if isS(s[3]) and s[3][1] == "-" then
+			return {
+				S{"-", S{"int", s[2], s[3][2]}},
+			}
+		end
+	end
+	return {}
+end
+
+-- c) decompose
+function Rules.IntegrateSum(s)
+	if s[1] == "int" then
+		if isS(s[3]) and s[3][1] == "+" then
+			local t = {}
+			for i = 2, s[3]:size() do
+				t[i-1] = S{"+", s[3][i], S{"int", s[2], s[3]:removed(i)}}
+			end
+			return t
+		end
+	end
+	return {}
+end
+
+-- d) linear substitution: TODO
+
+-- f) f: factors in denominator / numerator
+
+
 
 --------------------------------------------------------------------------------
 -- Logic:
