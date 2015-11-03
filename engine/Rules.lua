@@ -116,6 +116,17 @@ function Rules.Additive(s)
 	return r
 end
 
+function Rules.NegativeIdentity(s)
+	local o = Operators.inverseOf(s[1])
+	if o then
+		local i = Operators.getIdentity(o)
+		if Expression.equal(s[2], i) then
+			return {i}
+		end
+	end
+	return {}
+end
+
 function Rules.Negate(s)
 	-- TODO: determine based on types which invertible functions can be applied...
 	-- = can specify it's operands types? That seems elegant.

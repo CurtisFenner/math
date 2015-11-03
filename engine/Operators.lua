@@ -69,6 +69,14 @@ function Operators.isSelfInverse(op)
 	return op == "-" or op == "not" -- TODO: deal with adding CONDITIONS (e.g., /0)
 end
 
+function Operators.inverseOf(op)
+	if op == "-" then
+		return "+"
+	elseif op == "/" then
+		return "*"
+	end
+end
+
 -- TODO: Differentiate left/right operators
 function Operators.getInverse(op)
 	if op == "+" then
