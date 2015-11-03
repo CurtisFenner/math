@@ -75,8 +75,17 @@ end
 -- a) (c*g dv) = c (g dv)
 function Rules.IntegrateScaled(s)
 	if s[1] == "int" then
-		
+		if isS(s[3]) and s[3][1] == "*" then
+			for i = 2, s[3]:size() do
+				if Expression.isConstant(s[2], s[3][i]) then
+					return {
+						S{"*", s[3][i],  {"int", s[2],   s[3]:removed(i) } },
+					}
+				end
+			end
+		end
 	end
+	return {}
 end
 
 --------------------------------------------------------------------------------
