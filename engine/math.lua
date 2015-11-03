@@ -24,7 +24,7 @@ if INTERACTIVE then
 end
 
 -- Prefers solving.
-function Size(expression, data)
+function Size(expression, data) -- TODO: return multiple levels; integral is bad but compare based on HAS integral more than HOW MANY.
 	data = data or {
 		seen = {}
 	}
@@ -34,6 +34,9 @@ function Size(expression, data)
 		local bonus = 0
 		if expression[1] == "=" or expression[1] == "or" or expression[1] == "and" then
 			bonus = -0.9
+		end
+		if expression[1] == "int" or expression[1] == "d" then
+			bonus = 60
 		end
 		if Operators.isAssociative( expression[1] ) and expression:size() == 2 then
 			return Size(expression[2], data) + 0.1

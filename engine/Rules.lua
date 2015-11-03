@@ -35,6 +35,49 @@ function clone(S)
 	return {unpack(S)}
 end
 
+--------------------------------------------------------------------------------
+-- Integration:
+
+-- Taken from Slagle, 1961, SAINT:
+-- a) c dv = cv
+function Rules.IntegrateConstant(s)
+	if s[1] == "int" then
+		if Expression.isConstant(s[2], s[3]) then
+			return {S{"+", S{"*", s[3], s[2]}, Expression.Constant.new()}}
+		end
+	end
+	return {}
+end
+
+-- b) e^v dv = e^v
+function Rules.IntegrateExponent(s)
+	return {} -- TODO
+end
+
+-- c) c^v dv = c^v / ln c
+
+-- t) dv / v = log v
+function Rules.IntegrateInverse(s)
+	if s[1] == "int" then
+		if isS( s[3] ) and s[3][1] == "/" then
+			if Expression.equal(s[2], s[3][2]) then
+				return {
+					S{"+", S{"log", s[2]}, Expression.Constant.new()},
+				}
+			end
+		end
+	end
+	return {}
+end
+
+-- "algorithm like transformations":
+
+-- a) (c*g dv) = c (g dv)
+function Rules.IntegrateScaled(s)
+	if s[1] == "int" then
+		
+	end
+end
 
 --------------------------------------------------------------------------------
 -- Logic:
