@@ -129,6 +129,7 @@ function Interactive(expression, rules, score)
 				return
 			end
 			choice = tonumber( line )
+			print(choice)
 		until choice and r[choice]
 		expression = r[choice].expression
 	end
@@ -189,9 +190,9 @@ if INTERACTIVE then
 	if not input:find("%S") then
 		print("Enter S-expression:")
 		io.write("> ")
-		local f = io.read("*line")
-		input = parseS(f)
+		input = io.read("*line")
 	end
+	input = parseS(input)
 	Interactive(input, Rules, Size)
 else
 	assert(input:find("%S"), "must specify expression")
