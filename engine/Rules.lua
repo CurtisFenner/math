@@ -6,33 +6,32 @@ for i = #arg[0], 1, -1 do
 	end
 end
 
---[[
-
-Task:
-	Simplify
-	Solve
-	Factor
-	Integrate
-
-
-Problem:
-	solves:    Problem
-	index:     Any (identifies purpose in parent problem)
-	remaining: Integer (identifies number remaining)
-	solved:    Dictionary[ index ] -> Subproblem
-	task:      Enum (string) identifiying task
-	solution:  Value resulted from solving task
-]]
-
 local Expression = require(dir .. "Expression")
+local Factor = require(dir .. "Factor")
 local Operators = require(dir .. "Operators")
 local S, isS = unpack( require(dir .. "S") )
+
+
 --
 local Rules = {}
 --
 
 function clone(S)
 	return {unpack(S)}
+end
+
+--------------------------------------------------------------------------------
+
+function Rules.Factor(s)
+	local ps = {"*"}
+	local r = {}
+	for _, p in pairs(ps) do
+		local k = Factor(s, p)
+		for i = 1, #k do
+			table.insert(r, S{"*", k[i], S{"*", S{"/", k[i]}, s} })
+		end
+	end
+	return r
 end
 
 --------------------------------------------------------------------------------

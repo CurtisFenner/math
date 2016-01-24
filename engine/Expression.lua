@@ -35,6 +35,27 @@ function Expression.equal(a, b)
 	return a == b
 end
 
+function Expression.isInteger(e)
+	if type(e) == "number" then
+		return math.floor(e) == e
+	end
+	if isS(e) then
+		if Operators.preservesIntegers(s[1]) then
+			local allInt = true
+			for i = 2, s:size() do
+				if not Expression.isInteger(s[i]) then
+					allInt = false
+					break
+				end
+			end
+			if allInt then
+				return true
+			end
+		end
+	end
+	return false
+end
+
 function Expression.isConstant(v, e)
 	if type(e) == "number" or type(e) == "boolean" then
 		return true

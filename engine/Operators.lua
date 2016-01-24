@@ -4,6 +4,17 @@ function Operators.isBinary(op)
 	return false
 end
 
+function Operators.distributes(a, over)
+	if over == "+" then
+		return a == "*"
+	end
+	return false
+end
+
+function Operators.preservesIntegers(op)
+	return op == "-" or op == "+" or op == "*"
+end
+
 function Operators.getAnnihilator(op)
 	if op == "and" then
 		return false

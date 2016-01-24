@@ -200,6 +200,7 @@ if INTERACTIVE then
 else
 	assert(input:find("%S"), "must specify expression")
 	input = parseS(input)
+	local begin = os.clock()
 	local answer = Execute(input, Rules, Size)
 	--
 	local t = {}
@@ -208,6 +209,7 @@ else
 		table.insert(t, 1, box)
 		box = box.parent
 	end
+	print("# Elapsed " .. os.clock() - begin .. "s")
 	for i = 1, #t do
 		print("- " .. t[i].step)
 		print("", t[i].expression)
