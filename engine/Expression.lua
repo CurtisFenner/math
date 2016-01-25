@@ -35,6 +35,8 @@ function Expression.equal(a, b)
 	return a == b
 end
 
+assert( Expression.equal(  S{"+", 1, "x"}, S{"+", 1, "x"} ) )
+
 function Expression.isInteger(e)
 	if type(e) == "number" then
 		return math.floor(e) == e
