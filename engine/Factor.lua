@@ -28,7 +28,15 @@ function Factors(s, op)
 	if type(s) == "string" then
 		return {s}
 	end
+	local r = {}
 	if isS(s) then
+		if op == s[1] then
+			local t = {}
+			for i = 2, s:size() do
+				t[i-1] = s[i]
+			end
+			return t
+		end
 		if Operators.distributes(op, s[1]) then
 			local t = Factors(s[2], op)
 			for j = 3, s:size() do

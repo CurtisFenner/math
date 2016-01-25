@@ -22,6 +22,7 @@ end
 
 --------------------------------------------------------------------------------
 
+-- Replace S with X * Y.
 function Rules.Factor(s)
 	local ps = {"*"}
 	local r = {}
@@ -33,6 +34,30 @@ function Rules.Factor(s)
 	end
 	return r
 end
+
+-- Replace AX + AY with A(X + Y)
+function Rules.Undistribute(s)
+	local r = {}
+	for _, mul in pairs( Operators.whichDistributeOver(s[1]) ) do
+		local factors = Factors(s, mul)
+		for _, factor in pairs(factors) do
+			local inv = S{ Operators.getInverse(mul), factor }
+			local a = s:clone()
+			for i = 2, s:size() do
+				a = a:replaced(i, S{mul, inv, s[i] })
+			end
+			table.insert(r, S{mul, factor, a })
+		end
+	end
+	return r
+end
+
+print("###")
+x = S{"+", S{"*", "x", "x"}, "x"}
+for _, a in pairs( Rules.Undistribute(x) ) do
+	print("+", a)
+end
+print("###")
 
 --------------------------------------------------------------------------------
 

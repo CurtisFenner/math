@@ -11,6 +11,13 @@ function Operators.distributes(a, over)
 	return false
 end
 
+function Operators.whichDistributeOver(a)
+	if a == "+" then
+		return {"*"}
+	end
+	return {}
+end
+
 function Operators.preservesIntegers(op)
 	return op == "-" or op == "+" or op == "*"
 end
@@ -46,7 +53,7 @@ function Operators.isSymmetric(op)
 end
 
 function Operators.isCommutative(op)
-	return op == "+" or op == "or" or op == "and"
+	return op == "+" or op == "or" or op == "and" or op == "*"
 end
 
 function Operators.getIdentity(op, value)
